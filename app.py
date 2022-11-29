@@ -10,9 +10,6 @@ from datetime import datetime
 import re
 from urllib.parse import unquote, urlparse
 from pathlib import  PurePosixPath
-import ptvsd
-ptvsd.enable_attach(address=('localhost', 5678))
-ptvsd.wait_for_attach() # Only include this line if you always want to attach the debugger
 
 #extrae el año y el mes, de una fecha con formaro YYYY-MM-DD 
 def extractYearMonth(str_fecha):
