@@ -1,6 +1,6 @@
-# Este script recibe un fichero con datos exportados de ScreamingFrog
+# Este script recibe un fichero con datos exportados de Screaming Frog.
 # Es imprescindible que contenga los campos "Address", "Indexability", "datePublished 1" (resultado de extraer los valores del campo datePublished)
-# Se filtrarán autimáticamente los resultados con valor Indexability=Indexable y datePublished 1 not null
+# Es imprescindible que contenga los campos "Address", "Indexability", "datePublished 1" (resultado de extraer los valores del campo datePublished), published_time (extraer los valores de article:published_time)
 # Adicionalmente podemos añadir que se filtres únicamente aquellas URL ("Address") que contengan cierto texto (con el objetivo de eliminar URL que no sean posts)
 # Finalmente devolverá el número de posts publicados en cada mes
 # Además, se pueden agrupar los resultados por pahts (en el caso de que la URL contenga la categoría como path) indicando la profundidad del path que se quiera extraer
@@ -47,8 +47,6 @@ def convertDate(str_fecha):
 
 #Añade el campo "date" con el formato YYYY-MM-DD y el campo "month" con el formato YYYY-MM al dataFrame
 def addFechaDataFrame(df):
-   # df['date']=df.apply(lambda x: convertDate(x['datePublished 1']), 
-   #                     axis=1)
     df['date'] = df.apply (lambda row: asignarFecha(row), axis=1)    
     df['month']=df.apply(lambda x: extractYearMonth(x['date']), 
                         axis=1)
@@ -83,7 +81,7 @@ st.set_page_config(
    layout="wide"
 )
 st.title("Obtener volumen de contenidos creados por mes")
-st.text("Este script recibe un fichero con datos exportados de ScreamingFrog\nEs imprescindible que contenga los campos Address, Indexability, datePublished 1 (resultado de extraer los valores del campo datePublished)\nSe filtrarán autimáticamente los resultados con valor Indexability=Indexable y datePublished 1 not null\nAdicionalmente podemos añadir que se filtres únicamente aquellas URL (Address) que contengan cierto texto (con el objetivo de eliminar URL que no sean posts)\nFinalmente devolverá el número de posts publicados en cada mes\nAdemás, se pueden agrupar los resultados por pahts (en el caso de que la URL contenga la categoría como path) indicando la profundidad del path que se quiera extraer")
+st.text("Este script recibe un fichero con datos exportados de Screaming Frog.\nEs imprescindible que contenga los campos "Address", "Indexability", "datePublished 1" (resultado de extraer los valores del campo datePublished), published_time (extraer los valores de article:published_time).\nSe filtrarán autimáticamente los resultados con valor Indexability=Indexable y datePublished 1 not null\nAdicionalmente podemos añadir que se filtres únicamente aquellas URL (Address) que contengan cierto texto (con el objetivo de eliminar URL que no sean posts)\nFinalmente devolverá el número de posts publicados en cada mes\nAdemás, se pueden agrupar los resultados por pahts (en el caso de que la URL contenga la categoría como path) indicando la profundidad del path que se quiera extraer")
 
 #Obtiene la fecha de datePublished 1 o published_time 1 con el formato YYYY-MM-DD
 def asignarFecha(row):
