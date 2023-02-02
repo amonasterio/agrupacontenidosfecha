@@ -27,9 +27,17 @@ def convertDate(str_fecha):
     if match:
         fecha=match.group(1)
     else:
-        match=r'(\w\w\w \d\d, \d\d\d\d).*'
+        regex=r'(\w\w\w \d\d, \d\d\d\d).*'
+        match = re.search(regex, str_fecha)
         if match:
             fecha=str(datetime.strptime(str_fecha, "%b %d, %Y").date())
+        else:
+            regex=r'(\d\d/\d\d/\d\d\d\d).*'
+            match = re.search(regex, str_fecha)
+            if match:
+                fecha=str(datetime.strptime(str_fecha, "%d/%m/%Y").date())
+            else:
+                print("Error fecha: "+str_fecha)
     if len(fecha)>0:
         mes=fecha[5:7]
         dia=fecha[8:10]
