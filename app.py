@@ -16,9 +16,40 @@ def extractYearMonth(str_fecha):
     mes=str_fecha[:7]
     return mes
 
+#Convierte mes en abreviatura en español a abreviatura en inglés
+def convierteMes(str_mes):
+    str_mes=str_mes.lower()
+    if str_mes=='ene':
+        mes='Jan'
+    elif str_mes=='feb':
+        mes='Feb'
+    elif str_mes=='mar':
+        mes='Mar'
+    elif str_mes=='abr':
+        mes='Apr'
+    elif str_mes=='mayo' or str_mes=='may':
+        mes='May'
+    elif str_mes=='jun':
+        mes='Jun'
+    elif str_mes=='jul':
+        mes='Jul'
+    elif str_mes=='ago':
+        mes='Aug'
+    elif str_mes=='sep':
+        mes='Sep'
+    elif str_mes=='oct':
+        mes='Oct'
+    elif str_mes=='nov':
+        mes='Nov'
+    elif str_mes=='dic':
+        mes='Dec'
+    return mes
+
 # Convierte la fecha en formatos:
 # YYYY-MM-DD.*
-# %b(Abbreviated month name) DD, AAAA 
+# %b(Abbreviated month name) DD, AAAA
+# DD %b(Abbreviated month name) AAAA (en español)
+# DD/MM/YYYY
 # Al formato YYYY-MM-DD
 def convertDate(str_fecha):
     fecha=''
@@ -37,7 +68,15 @@ def convertDate(str_fecha):
             if match:
                 fecha=str(datetime.strptime(str_fecha, "%d/%m/%Y").date())
             else:
-                print("Error fecha: "+str_fecha)
+                regex=r'(\d\d \w\w\w\w? \d\d\d\d).*'
+                match = re.search(regex, str_fecha)
+                if match:
+                    str_mes=re.search('\d\d (\w\w\w\w?) \d\d\d\d', str_fecha).group(1)
+                    mes=convierteMes(str_mes)
+                    cambio=re.sub("\w\w\w\w? ", mes+" ", str_fecha)
+                    fecha=str(datetime.strptime(cambio, "%d %b %Y").date())
+                else:
+                    print("Error fecha: "+str_fecha)
     if len(fecha)>0:
         mes=fecha[5:7]
         dia=fecha[8:10]
@@ -85,7 +124,12 @@ st.set_page_config(
    layout="wide"
 )
 st.title("Obtener volumen de contenidos creados por mes")
-st.text('Este script recibe un fichero con datos exportados de Screaming Frog.\nEs imprescindible que contenga los campos "Address", "Indexability", "datePublished 1" (resultado de extraer los valores del campo datePublished), published_time (extraer los valores de article:published_time).\nSe filtrarán autimáticamente los resultados con valor Indexability=Indexable y datePublished 1 not null o published_time 1 not null\nAdicionalmente podemos añadir que se filtres únicamente aquellas URL (Address) que contengan cierto texto (con el objetivo de eliminar URL que no sean posts)\nFinalmente, devolverá el número de posts publicados en cada mes\nAdemás, se pueden agrupar los resultados por pahts (en el caso de que la URL contenga la categoría como path) indicando la profundidad del path que se quiera extraer')
+st.text('Este script recibe un fichero con datos exportados de Screaming Frog.\nEs imprescindible que contenga los campos "Address", "Indexability", "datePublished 1" (resultado de extraer los valores del campo datePublished), published_time (extraer los valores de article:published_time).\nSe filtrarán automáticamente los resultados con valor Indexability=Indexable y datePublished 1 not null o published_time 1 not null\nAdicionalmente podemos añadir que se filtres únicamente aquellas URL (Address) que contengan cierto texto (con el objetivo de eliminar URL que no sean posts)\nFinalmente, devolverá el número de posts publicados en cada mes\nAdemás, se pueden agrupar los resultados por pahts (en el caso de que la URL contenga la categoría como path) indicando la profundidad del path que se quiera extraer')
+st.text("Formatos de fecha soportados: ")
+st.text("   - YYYY-MM-DD.*")
+st.text("   - %b(Abbreviated month name) DD, AAAA")
+st.text("   - DD %b(Abbreviated month name) AAAA (en español)")
+st.text("   - DD/MM/YYYY")
 
 #Obtiene la fecha de datePublished 1 o published_time 1 con el formato YYYY-MM-DD
 def asignarFecha(row):
@@ -103,7 +147,15 @@ if uploaded_file is not None:
     #Si además, debemos dejar los que contengan ciertos caracteres en las URL
     filtro_url=st.text_input("Introduzca el texto por el que debemos filtar las URL en caso de ser necesario","")
     df_entrada=filtraResultados(df_entrada,filtro_url)
-    st.dataframe(df_entrada[["Address","datePublished 1", "published_time 1"]])
+    columnas=["Address"]
+    col_fechas=["datePublished 1", "published_time 1"]
+    #Añadimos al dataFrame las columnas que tenga el csv que guarden relación con las fechas
+    for col in col_fechas:    
+        if col in df_entrada.columns:
+            columnas.append(col)
+        else:
+            st.warning("No existe la columna "+col+" en el csv")
+    st.dataframe(df_entrada[columnas])
     #Si tras filtrar no tenemos un dataframe vacío continuamos
     if not df_entrada.empty:
         ##Añadimos la columna "date" con la fecha en el formato que queremos, y la columna "month" con el formato YYYY-MM 
